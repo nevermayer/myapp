@@ -52,7 +52,7 @@ class CamarasScreenState extends State<CamarasScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ValvulasScreen(camara: camara),
+                        builder: (context) => ValvulasScreen(camara: camara, tramo: widget.tramo),
                       ),
                     );
                   },

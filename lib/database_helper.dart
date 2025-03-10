@@ -28,11 +28,44 @@ class Valvula {
   final int? id;
   final String nombre;
   final int camaraId;
+  final String? dn;
+  final String? pn;
+  final String? medidatorquimetro;
+  final String? valvula;
+  final String? colada;
+  final String? material;
+  final String? recubrimientoB1;
+  final String? recubrimientoB2;
+  final String? observaciones;
 
-  Valvula({this.id, required this.nombre, required this.camaraId});
+  Valvula({    this.id,
+    required this.nombre,
+    required this.camaraId,
+    this.dn,
+    this.pn,
+    this.medidatorquimetro,
+    this.valvula,
+    this.colada,
+    this.material,
+    this.recubrimientoB1,
+    this.recubrimientoB2,
+    this.observaciones,});
 
   Map<String, dynamic> toMap() {
-    return {'id': id, 'nombre': nombre, 'camaraId': camaraId};
+    return {
+      'id': id,
+      'nombre': nombre,
+      'camaraId': camaraId,
+      'dn': dn,
+      'pn': pn,
+      'medidatorquimetro': medidatorquimetro,
+      'valvula': valvula,
+      'colada': colada,
+      'material': material,
+      'recubrimientoB1': recubrimientoB1,
+      'recubrimientoB2': recubrimientoB2,
+      'observaciones': observaciones,
+      };
   }
 }
 
@@ -51,19 +84,37 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, 'app.db');
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+    return await openDatabase(path, version: 2, onUpgrade: _onUpgrade, onCreate: _onCreate);
   }
-
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < newVersion) {
+      await db.execute(
+          'ALTER TABLE valvulas ADD COLUMN dn TEXT');
+      await db.execute(
+          'ALTER TABLE valvulas ADD COLUMN pn TEXT');
+      await db.execute(
+          'ALTER TABLE valvulas ADD COLUMN medidatorquimetro TEXT');
+      await db.execute(
+          'ALTER TABLE valvulas ADD COLUMN valvula TEXT');
+      await db.execute(
+          'ALTER TABLE valvulas ADD COLUMN colada TEXT');
+      await db.execute(
+          'ALTER TABLE valvulas ADD COLUMN material TEXT');
+      await db.execute(
+          'ALTER TABLE valvulas ADD COLUMN recubrimientoB1 TEXT');
+      await db.execute(
+          'ALTER TABLE valvulas ADD COLUMN recubrimientoB2 TEXT');
+      await db.execute(
+          'ALTER TABLE valvulas ADD COLUMN observaciones TEXT');
+    }
+  }
   Future<void> _onCreate(Database db, int version) async {
     await db.execute(
-      'CREATE TABLE tramos(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT)',
-    );
+        'CREATE TABLE tramos(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT)');
     await db.execute(
-      'CREATE TABLE camaras(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, tramoId INTEGER, FOREIGN KEY(tramoId) REFERENCES tramos(id))',
-    );
+        'CREATE TABLE camaras(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, tramoId INTEGER, FOREIGN KEY(tramoId) REFERENCES tramos(id))');
     await db.execute(
-      'CREATE TABLE valvulas(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, camaraId INTEGER, FOREIGN KEY(camaraId) REFERENCES camaras(id))',
-    );
+        'CREATE TABLE valvulas(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, camaraId INTEGER, dn TEXT, pn TEXT, medidatorquimetro TEXT, valvula TEXT, colada TEXT, material TEXT, recubrimientoB1 TEXT, recubrimientoB2 TEXT, observaciones TEXT, FOREIGN KEY(camaraId) REFERENCES camaras(id))');
   }
 
   Future<List<Tramo>> getTramos() async {
@@ -150,6 +201,15 @@ class DatabaseHelper {
         id: maps[i]['id'],
         nombre: maps[i]['nombre'],
         camaraId: maps[i]['camaraId'],
+        dn: maps[i]['dn'],
+        pn: maps[i]['pn'],
+        medidatorquimetro: maps[i]['medidatorquimetro'],
+        valvula: maps[i]['valvula'],
+        colada: maps[i]['colada'],
+        material: maps[i]['material'],
+        recubrimientoB1: maps[i]['recubrimientoB1'],
+        recubrimientoB2: maps[i]['recubrimientoB2'],
+        observaciones: maps[i]['observaciones'],
       );
     });
   }
