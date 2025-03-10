@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'database_helper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,13 +20,19 @@ class ValvulasScreen extends StatefulWidget {
 class ValvulasScreenState extends State<ValvulasScreen> {
   late Future<List<Valvula>> _valvulas;
   final _dbHelper = DatabaseHelper();
+  final MediaStore mediaStore = MediaStore();
 
   @override
   void initState() {
     super.initState();
     _refreshValvulas();
+    _initMediaStore();
   }
-
+  //funcion para inicializar mediaStore.
+  void _initMediaStore() async {
+    MediaStore.appFolder = 'AppValvulas';
+    await MediaStore.ensureInitialized();
+  }
   void _refreshValvulas() {
     setState(() {
       _valvulas = _dbHelper.getValvulas(widget.camara.id!);
@@ -397,12 +404,26 @@ class ValvulasScreenState extends State<ValvulasScreen> {
             '${widget.tramo.nombre}_${widget.camara.nombre}_${valvula.nombre}_$formattedDate.jpg';
         final String newPath = '${directory.path}/$fileName';
         // Mover la imagen a la carpeta interna de la app
-           final File savedImage = await File(pickedFile.path).copy(newPath);
+        final File savedImage = await File(pickedFile.path).copy(newPath);
+        
 
+        final SaveInfo? saveInfo = await mediaStore.saveFile(
+          // Usar la instancia
+          tempFilePath: savedImage.path,
+          dirType: DirType.photo,
+          dirName: DirName.dcim,
+          relativePath: 'AppValvulas',
+        );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Foto guardada en: ${savedImage.path}')),
-          );
+          if (saveInfo != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Foto guardada en la galeria')),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error al guardar la foto.')),
+            );
+          }
         }
       } catch (e) {
         if (mounted) {
