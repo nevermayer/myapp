@@ -30,9 +30,7 @@ class CamarasScreenState extends State<CamarasScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Cámaras de ${widget.tramo.nombre}'),
-      ),
+      appBar: AppBar(title: Text('Cámaras de ${widget.tramo.nombre}')),
       body: FutureBuilder<List<Camara>>(
         future: _camaras,
         builder: (context, snapshot) {
@@ -46,8 +44,11 @@ class CamarasScreenState extends State<CamarasScreen> {
               itemCount: camaras.length,
               itemBuilder: (context, index) {
                 final camara = camaras[index];
-                return ListTile(
+                return Container(
+                  color: index.isEven ? Colors.white: const Color.fromRGBO(214,242,255,0.729),
+                  child: ListTile(
                   title: Text(camara.nombre),
+                  subtitle: Text('Tipo de camara: ${camara.tipodecamara ?? ''}'),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -69,6 +70,7 @@ class CamarasScreenState extends State<CamarasScreen> {
                       ),
                     ],
                   ),
+                ),
                 );
               },
             );
@@ -86,14 +88,29 @@ class CamarasScreenState extends State<CamarasScreen> {
 
   void _showAddDialog() {
     final TextEditingController nameController = TextEditingController();
+    final TextEditingController tipoDeCamaraController =
+        TextEditingController();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Agregar Cámara'),
-          content: TextField(
-            controller: nameController,
-            decoration: const InputDecoration(hintText: 'Nombre de la Cámara'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre de la Cámara',
+                ),
+              ),
+              TextField(
+                controller: tipoDeCamaraController, // Nuevo TextField
+                decoration: const InputDecoration(
+                  labelText: 'Tipo de Camara',
+                ), // Nuevo TextField
+              ),
+            ],
           ),
           actions: [
             TextButton(
@@ -103,7 +120,10 @@ class CamarasScreenState extends State<CamarasScreen> {
             TextButton(
               onPressed: () {
                 if (nameController.text.isNotEmpty) {
-                  _insertCamara(nameController.text);
+                  _insertCamara(
+                    nameController.text,
+                    tipoDeCamaraController.text,
+                  );
                   Navigator.pop(context);
                 }
               },
@@ -116,16 +136,34 @@ class CamarasScreenState extends State<CamarasScreen> {
   }
 
   void _showEditDialog(Camara camara) {
-    final TextEditingController nameController =
-        TextEditingController(text: camara.nombre);
+    final TextEditingController nameController = TextEditingController(
+      text: camara.nombre,
+    );
+    final TextEditingController tipoDeCamaraController = TextEditingController(
+      text: camara.tipodecamara,
+    ); //nuevo controlador
+
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Editar Cámara'),
-          content: TextField(
-            controller: nameController,
-            decoration: const InputDecoration(hintText: 'Nombre de la Cámara'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre de la Cámara',
+                ),
+              ),
+              TextField(
+                controller: tipoDeCamaraController, // Nuevo TextField
+                decoration: const InputDecoration(
+                  labelText: 'Tipo de Camara',
+                ), // Nuevo TextField
+              ),
+            ],
           ),
           actions: [
             TextButton(
@@ -135,7 +173,14 @@ class CamarasScreenState extends State<CamarasScreen> {
             TextButton(
               onPressed: () {
                 if (nameController.text.isNotEmpty) {
-                  _updateCamara(Camara(id: camara.id, nombre: nameController.text, tramoId: camara.tramoId));
+                  _updateCamara(
+                    Camara(
+                      id: camara.id,
+                      nombre: nameController.text,
+                      tipodecamara: tipoDeCamaraController.text,
+                      tramoId: camara.tramoId,
+                    ),
+                  );
                   Navigator.pop(context);
                 }
               },
@@ -153,7 +198,9 @@ class CamarasScreenState extends State<CamarasScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Eliminar Cámara'),
-          content: const Text('¿Estás seguro de que quieres eliminar esta cámara?'),
+          content: const Text(
+            '¿Estás seguro de que quieres eliminar esta cámara?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -172,8 +219,12 @@ class CamarasScreenState extends State<CamarasScreen> {
     );
   }
 
-  void _insertCamara(String nombre) async {
-    final camara = Camara(nombre: nombre, tramoId: widget.tramo.id!);
+  void _insertCamara(String nombre, String tipoDeCamara) async {
+    final camara = Camara(
+      nombre: nombre,
+      tipodecamara: tipoDeCamara,
+      tramoId: widget.tramo.id!,
+    );
     await _dbHelper.insertCamara(camara);
     _refreshCamaras();
   }

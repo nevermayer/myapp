@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:media_store_plus/media_store_plus.dart';
+import 'package:myapp/valvulas_detail_screen.dart';
 import 'package:path_provider/path_provider.dart';
 import 'database_helper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,9 +11,7 @@ class ValvulasScreen extends StatefulWidget {
   final Camara camara;
   final Tramo tramo;
 
-  //const ValvulasScreen({super.key, required this.camara});
-  const ValvulasScreen({Key? key, required this.camara, required this.tramo})
-    : super(key: key);
+  const ValvulasScreen({super.key, required this.camara, required this.tramo});
   @override
   ValvulasScreenState createState() => ValvulasScreenState();
 }
@@ -28,11 +27,13 @@ class ValvulasScreenState extends State<ValvulasScreen> {
     _refreshValvulas();
     _initMediaStore();
   }
+
   //funcion para inicializar mediaStore.
   void _initMediaStore() async {
     MediaStore.appFolder = 'AppValvulas';
     await MediaStore.ensureInitialized();
   }
+
   void _refreshValvulas() {
     setState(() {
       _valvulas = _dbHelper.getValvulas(widget.camara.id!);
@@ -56,27 +57,43 @@ class ValvulasScreenState extends State<ValvulasScreen> {
               itemCount: valvulas.length,
               itemBuilder: (context, index) {
                 final valvula = valvulas[index];
-                return ListTile(
-                  title: Text(valvula.nombre),
-                  subtitle: Text(
-                    'DN: ${valvula.dn ?? ''}, PN: ${valvula.pn ?? ''}',
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.camera_alt),
-                        onPressed: () => _pickimagefromcamera(valvula),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _showEditDialog(valvula),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => _showDeleteConfirmation(valvula.id!),
-                      ),
-                    ],
+                return Container(
+                  color:
+                      index.isEven
+                          ? Colors.white
+                          : const Color.fromRGBO(214, 242, 255, 0.729),
+                  child: ListTile(
+                    title: Text(valvula.valvula ?? ''),
+                    subtitle: Text(
+                      'DN: ${valvula.dn ?? ''}, PN: ${valvula.pn ?? ''}',
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  ValvulaDetailScreen(valvula: valvula),
+                        ),
+                      );
+                    },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.camera_alt),
+                          onPressed: () => _pickimagefromcamera(valvula),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => _showEditDialog(valvula),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _showDeleteConfirmation(valvula.id!),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -120,21 +137,21 @@ class ValvulasScreenState extends State<ValvulasScreen> {
                 TextField(
                   controller: nameController,
                   decoration: const InputDecoration(
-                    hintText: 'Nombre de la Válvula',
+                    hintText: 'Número de la Válvula',
                   ),
                 ),
                 TextField(
                   controller: dnController,
-                  decoration: const InputDecoration(hintText: 'DN'),
+                  decoration: const InputDecoration(hintText: 'Dn(mm)'),
                 ),
                 TextField(
                   controller: pnController,
-                  decoration: const InputDecoration(hintText: 'PN'),
+                  decoration: const InputDecoration(hintText: 'Pn(bar)'),
                 ),
                 TextField(
                   controller: medidatorquimetroController,
                   decoration: const InputDecoration(
-                    hintText: 'Medida Torquímetro',
+                    hintText: 'Medida Torquímetro(lbf*pie)',
                   ),
                 ),
                 TextField(
@@ -152,13 +169,13 @@ class ValvulasScreenState extends State<ValvulasScreen> {
                 TextField(
                   controller: recubrimientoB1Controller,
                   decoration: const InputDecoration(
-                    hintText: 'Recubrimiento B1',
+                    hintText: 'Recubrimiento B1(µm)',
                   ),
                 ),
                 TextField(
                   controller: recubrimientoB2Controller,
                   decoration: const InputDecoration(
-                    hintText: 'Recubrimiento B2',
+                    hintText: 'Recubrimiento B2(µm)',
                   ),
                 ),
                 TextField(
@@ -239,21 +256,21 @@ class ValvulasScreenState extends State<ValvulasScreen> {
                 TextField(
                   controller: nameController,
                   decoration: const InputDecoration(
-                    hintText: 'Nombre de la Válvula',
+                    hintText: 'Número de la Válvula',
                   ),
                 ),
                 TextField(
                   controller: dnController,
-                  decoration: const InputDecoration(hintText: 'DN'),
+                  decoration: const InputDecoration(hintText: 'Dn(mm)'),
                 ),
                 TextField(
                   controller: pnController,
-                  decoration: const InputDecoration(hintText: 'PN'),
+                  decoration: const InputDecoration(hintText: 'Pn(bar)'),
                 ),
                 TextField(
                   controller: medidatorquimetroController,
                   decoration: const InputDecoration(
-                    hintText: 'Medida Torquímetro',
+                    hintText: 'Medida Torquímetro(lbf*pie)',
                   ),
                 ),
                 TextField(
@@ -271,13 +288,13 @@ class ValvulasScreenState extends State<ValvulasScreen> {
                 TextField(
                   controller: recubrimientoB1Controller,
                   decoration: const InputDecoration(
-                    hintText: 'Recubrimiento B1',
+                    hintText: 'Recubrimiento B1(µm)',
                   ),
                 ),
                 TextField(
                   controller: recubrimientoB2Controller,
                   decoration: const InputDecoration(
-                    hintText: 'Recubrimiento B2',
+                    hintText: 'Recubrimiento B2(µm)',
                   ),
                 ),
                 TextField(
@@ -401,13 +418,12 @@ class ValvulasScreenState extends State<ValvulasScreen> {
         final now = DateTime.now();
         final formattedDate = DateFormat('yyyyMMdd_HHmmss').format(now);
         final fileName =
-            '${widget.tramo.nombre}_${widget.camara.nombre}_${valvula.nombre}_$formattedDate.jpg';
+            '${widget.tramo.nombre}_${widget.camara.nombre}_${valvula.valvula}_$formattedDate.jpg';
         final String newPath = '${directory.path}/$fileName';
         // Mover la imagen a la carpeta interna de la app
         final File savedImage = await File(pickedFile.path).copy(newPath);
-        
 
-        final SaveInfo? saveInfo = await mediaStore.saveFile(
+        await mediaStore.saveFile(
           // Usar la instancia
           tempFilePath: savedImage.path,
           dirType: DirType.photo,
@@ -415,15 +431,9 @@ class ValvulasScreenState extends State<ValvulasScreen> {
           relativePath: 'AppValvulas',
         );
         if (mounted) {
-          if (saveInfo != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Foto guardada en la galeria')),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error al guardar la foto.')),
-            );
-          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Foto guardada en la galeria')),
+          );
         }
       } catch (e) {
         if (mounted) {

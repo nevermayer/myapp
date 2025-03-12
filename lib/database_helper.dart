@@ -15,12 +15,23 @@ class Tramo {
 class Camara {
   final int? id;
   final String nombre;
+  String? tipodecamara;
   final int tramoId;
 
-  Camara({this.id, required this.nombre, required this.tramoId});
+  Camara({
+    this.id,
+    required this.nombre,
+    required this.tramoId,
+    this.tipodecamara,
+  });
 
   Map<String, dynamic> toMap() {
-    return {'id': id, 'nombre': nombre, 'tramoId': tramoId};
+    return {
+      'id': id,
+      'nombre': nombre,
+      'tipodecamara': tipodecamara,
+      'tramoId': tramoId,
+    };
   }
 }
 
@@ -38,7 +49,8 @@ class Valvula {
   final String? recubrimientoB2;
   final String? observaciones;
 
-  Valvula({    this.id,
+  Valvula({
+    this.id,
     required this.nombre,
     required this.camaraId,
     this.dn,
@@ -49,7 +61,8 @@ class Valvula {
     this.material,
     this.recubrimientoB1,
     this.recubrimientoB2,
-    this.observaciones,});
+    this.observaciones,
+  });
 
   Map<String, dynamic> toMap() {
     return {
@@ -65,7 +78,7 @@ class Valvula {
       'recubrimientoB1': recubrimientoB1,
       'recubrimientoB2': recubrimientoB2,
       'observaciones': observaciones,
-      };
+    };
   }
 }
 
@@ -84,37 +97,30 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, 'app.db');
-    return await openDatabase(path, version: 2, onUpgrade: _onUpgrade, onCreate: _onCreate);
+    return await openDatabase(
+      path,
+      version: 3,
+      onUpgrade: _onUpgrade,
+      onCreate: _onCreate,
+    );
   }
+
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
-      await db.execute(
-          'ALTER TABLE valvulas ADD COLUMN dn TEXT');
-      await db.execute(
-          'ALTER TABLE valvulas ADD COLUMN pn TEXT');
-      await db.execute(
-          'ALTER TABLE valvulas ADD COLUMN medidatorquimetro TEXT');
-      await db.execute(
-          'ALTER TABLE valvulas ADD COLUMN valvula TEXT');
-      await db.execute(
-          'ALTER TABLE valvulas ADD COLUMN colada TEXT');
-      await db.execute(
-          'ALTER TABLE valvulas ADD COLUMN material TEXT');
-      await db.execute(
-          'ALTER TABLE valvulas ADD COLUMN recubrimientoB1 TEXT');
-      await db.execute(
-          'ALTER TABLE valvulas ADD COLUMN recubrimientoB2 TEXT');
-      await db.execute(
-          'ALTER TABLE valvulas ADD COLUMN observaciones TEXT');
+      await db.execute('ALTER TABLE camaras ADD COLUMN tipodecamara TEXT');
     }
   }
+
   Future<void> _onCreate(Database db, int version) async {
     await db.execute(
-        'CREATE TABLE tramos(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT)');
+      'CREATE TABLE tramos(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT)',
+    );
     await db.execute(
-        'CREATE TABLE camaras(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, tramoId INTEGER, FOREIGN KEY(tramoId) REFERENCES tramos(id))');
+      'CREATE TABLE camaras(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, tipodecamara TEXT, tramoId INTEGER, FOREIGN KEY(tramoId) REFERENCES tramos(id))',
+    );
     await db.execute(
-        'CREATE TABLE valvulas(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, camaraId INTEGER, dn TEXT, pn TEXT, medidatorquimetro TEXT, valvula TEXT, colada TEXT, material TEXT, recubrimientoB1 TEXT, recubrimientoB2 TEXT, observaciones TEXT, FOREIGN KEY(camaraId) REFERENCES camaras(id))');
+      'CREATE TABLE valvulas(id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, camaraId INTEGER, dn TEXT, pn TEXT, medidatorquimetro TEXT, valvula TEXT, colada TEXT, material TEXT, recubrimientoB1 TEXT, recubrimientoB2 TEXT, observaciones TEXT, FOREIGN KEY(camaraId) REFERENCES camaras(id))',
+    );
   }
 
   Future<List<Tramo>> getTramos() async {
@@ -160,6 +166,7 @@ class DatabaseHelper {
       return Camara(
         id: maps[i]['id'],
         nombre: maps[i]['nombre'],
+        tipodecamara: maps[i]['tipodecamara'],
         tramoId: maps[i]['tramoId'],
       );
     });
@@ -222,6 +229,7 @@ class DatabaseHelper {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
   Future<void> updateValvula(Valvula valvula) async {
     final db = await database;
     await db.update(
@@ -235,5 +243,16 @@ class DatabaseHelper {
   Future<void> deleteValvula(int id) async {
     final db = await database;
     await db.delete('valvulas', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Map<String, dynamic>>> getCamarasAndValvulasData(
+    int tramoId,
+  ) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      'select c.nombre as nombrecamara,c.tipodecamara,v.dn,v.pn,v.medidatorquimetro,v.valvula,v.colada,v.material,v.recubrimientoB1,v.recubrimientoB2,v.observaciones from valvulas v, camaras c where v.camaraId = c.id and c.tramoId = ?;',
+      [tramoId], // Pasar el tramoId como argumento
+    );
+    return maps;
   }
 }
