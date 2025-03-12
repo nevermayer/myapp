@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Ingreso de Nombre y Apellido',
       theme: ThemeData(
-        scaffoldBackgroundColor: Color.fromRGBO(239,250,255,0.890),
+        //scaffoldBackgroundColor: Color.fromRGBO(239,250,255,0.890),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromRGBO(18,99,199,1), // Un azul como ejemplo
           foregroundColor: Colors.white,
